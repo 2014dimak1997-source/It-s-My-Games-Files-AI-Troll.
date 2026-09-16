@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Casino</title>
+    <style>
+        :root {
+            --bg-dark: #0d0914;
+            --card-bg: rgba(25, 18, 41, 0.9);
+            --accent-cyan: #00f2fe;
+            --accent-pink: #4facfe;
+            --neon-purple: #9d4edd;
+            --neon-gold: #ffd700;
+            --neon-red: #ff4d4d;
+            --neon-green: #2ecc71;
+            --text-color: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(157, 78, 221, 0.25) 0%, transparent 40%),
+                radial-gradient(circle at 85% 80%, rgba(0, 242, 254, 0.2) 0%, transparent 40%),
+                linear-gradient(to bottom, #090510, #140c24);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            z-index: 1;
+        }
+
+        .auth-container {
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        .game-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .game-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 15px rgba(157, 78, 221, 0.3);
+            text-align: center;
+        }
+
+        h2, h3 {
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px var(--neon-purple);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #bbb;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(45deg, var(--neon-purple), var(--accent-pink));
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .btn-small {
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            margin-top: 0;
+            width: auto;
+        }
+
+        .btn-green { background: linear-gradient(45deg, #11998e, #38ef7d); }
+        .btn-red { background: linear-gradient(45deg, #cb2d3e, #ef473a); }
+
+        .switch-link {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #aaa;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .hidden { display: none !important; }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .balance {
+            color: var(--neon-gold);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .slots-container {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid var(--neon-purple);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .slot {
+            font-size: 3rem;
+            width: 70px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .controls input { text-align: center; }
+
+        .msg {
+            min-height: 24px;
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid var(--neon-red);
+            color: var(--neon-red);
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .fullscreen-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            background: rgba(25, 18, 41, 0.85);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .shop-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .shop-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .credit-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .credit-warning {
+            color: var(--neon-red);
+            font-size: 0.8rem;
+            margin-top: 8px;
+            background: rgba(255, 77, 77, 0.1);
+            padding: 8px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<button class="fullscreen-btn" id="fullscreen-btn" onclick="toggleFullScreen()">⛶ Повний екран</button>
+
+<div class="main-wrapper">
+    <!-- Форма входу -->
+    <div id="auth-card" class="card auth-container">
+        <h2 id="auth-title">Вхід у акаунт</h2>
+        <form id="auth-form">
+            <div class="form-group">
+                <label for="username">Логін</label>
+                <input type="text" id="username" required placeholder="Введіть логін">
+            </div>
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" required placeholder="Введіть пароль">
+            </div>
+            <button type="submit" class="btn" id="auth-btn">Увійти</button>
+        </form>
+        <div class="switch-link" id="switch-auth">Немає акаунту? Зареєструватися</div>
+        <div class="msg" id="auth-msg"></div>
+    </div>
+
+    <!-- Гра -->
+    <div id="game-layout" class="game-layout hidden">
+        <!-- Магазин -->
+        <div class="card">
+            <h3>🧪 Магазин зілля</h3>
+            <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 15px;">Ціна: 500 грн</p>
+            <div class="shop-items">
+                <div class="shop-item">
+                    <span>🍀 Зілля Везіння</span>
+                    <button class="btn btn-small btn-green" onclick="buyPotion('luck')">Купити (500 грн)</button>
+                </div>
+                <div class="shop-item">
+                    <span>💰 Зілля 2x Виграш</span>
+                    <button class="btn btn-small btn-green" onclick="buyPotion('multiplier')">Купити (500 грн)</button>
+                </div>
+                <div class="shop-item">
+                    <span>⚡ Зілля Швидкості</span>
+                    <button class="btn btn-small btn-green" onclick="buyPotion('speed')">Купити (500 грн)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слоти -->
+        <div class="card">
+            <div class="user-info">
+                <span>Гравець: <strong id="user-display"></strong></span>
+                <button class="logout-btn" onclick="logout()">Вийти</button>
+            </div>
+            <h2>🎰 Neon Slots 🎰</h2>
+            <div class="slots-container">
+                <div class="slot" id="slot1">🍒</div>
+                <div class="slot" id="slot2">🍋</div>
+                <div class="slot" id="slot3">💎</div>
+            </div>
+            <div class="user-info">
+                <span>Баланс:</span>
+                <span class="balance" id="balance-display">1000 грн</span>
+            </div>
+            <div class="controls">
+                <input type="number" id="bet-input" value="50" min="10" step="10">
+                <button class="btn" style="margin-top:0;" onclick="spin()">Крутити</button>
+            </div>
+            <div class="msg" id="game-msg">Удачі!</div>
+        </div>
+
+        <!-- Кредити -->
+        <div class="card">
+            <h3>🏦 Банківські Кредити</h3>
+            <p id="credits-count" style="font-size: 0.85rem; color: #aaa; margin-bottom: 10px;">Взято кредитів: 0 / 3</p>
+            <button id="take-credit-btn" class="btn btn-green" style="margin-bottom: 15px;" onclick="takeCredit()">Взяти новий кредит (1000 грн)</button>
+            
+            <div id="credits-list"></div>
+
+            <div class="credit-warning">
+                ⚠️ Штраф при простроченні (24 год): -10 грн / 10 хв за кожен кредит.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const symbols = ['🍒', '🍋', '🔔', '💎', '7️⃣'];
+    let isRegistering = false;
+    let currentUser = null;
+
+    function toggleFullScreen() {
+        const btn = document.getElementById('fullscreen-btn');
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+            btn.innerHTML = '🗗 Віконний режим';
+        } else {
+            document.exitFullscreen();
+            btn.innerHTML = '⛶ Повний екран';
+        }
+    }
+
+    const authCard = document.getElementById('auth-card');
+    const gameLayout = document.getElementById('game-layout');
+    const authTitle = document.getElementById('auth-title');
+    const authBtn = document.getElementById('auth-btn');
+    const switchAuth = document.getElementById('switch-auth');
+    const authMsg = document.getElementById('auth-msg');
+
+    switchAuth.addEventListener('click', () => {
+        isRegistering = !isRegistering;
+        authTitle.innerText = isRegistering ? 'Реєстрація' : 'Вхід у акаунт';
+        authBtn.innerText = isRegistering ? 'Зареєструватися' : 'Увійти';
+        switchAuth.innerText = isRegistering ? 'Вже є акаунт? Увійти' : 'Немає акаунту? Зареєструватися';
+    });
+
+    document.getElementById('auth-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        let users = JSON.parse(localStorage.getItem('casino_users')) || {};
+
+        if (isRegistering) {
+            if (users[username]) {
+                authMsg.innerText = 'Логін зайнятий!';
+                return;
+            }
+            users[username] = { password, balance: 1000, credits: [] };
+            localStorage.setItem('casino_users', JSON.stringify(users));
+            authMsg.innerText = 'Успіх! Увійдіть.';
+            isRegistering = false;
+        } else {
+            if (users[username] && users[username].password === password) {
+                currentUser = username;
+                loadGameScreen();
+            } else {
+                authMsg.innerText = 'Невірний логін або пароль!';
+            }
+        }
+    });
+
+    function loadGameScreen() {
+        authCard.classList.add('hidden');
+        gameLayout.classList.remove('hidden');
+        document.getElementById('user-display').innerText = currentUser;
+        
+        let users = JSON.parse(localStorage.getItem('casino_users'));
+        if (!users[currentUser].credits) {
+            users[currentUser].credits = [];
+            localStorage.setItem('casino_users', JSON.stringify(users));
+        }
+
+        checkPenalties();
+        updateUIState();
+    }
+
+    function logout() {
+        currentUser = null;
+        gameLayout.classList.add('hidden');
+        authCard.classList.remove('hidden');
+    }
+
+    function checkPenalties() {
+        if (!currentUser) return;
+        let users = JSON.parse(localStorage.getItem('casino_users'));
+        let userData = users[currentUser];
+
+        if (userData.credits && userData.credits.length > 0) {
+            const now = Date.now();
+            const hours24 = 24 * 60 * 60 * 1000;
+
+            userData.credits.forEach(credit => {
+                const timePassed = now - credit.timestamp;
+                if (timePassed > hours24) {
+                    const overdueTime = timePassed - hours24;
+                    const intervals = Math.floor(overdueTime / (10 * 60 * 1000));
+                    const penalty = intervals * 10;
+
+                    if (penalty > 0) {
+                        userData.balance -= penalty;
+                    }
+                }
+            });
+            localStorage.setItem('casino_users', JSON.stringify(users));
+        }
+    }
+
+    function updateUIState() {
+        if (!currentUser) return;
+        let users = JSON.parse(localStorage.getItem('casino_users'));
+        let userData = users[currentUser];
+
+        document.getElementById('balance-display').innerText = userData.balance + ' грн';
+
+        const creditsList = document.getElementById('credits-list');
+        const creditsCount = document.getElementById('credits-count');
+        const takeBtn = document.getElementById('take-credit-btn');
+
+        creditsCount.innerText = `Взято кредитів: ${userData.credits.length} / 3`;
+
+        if (userData.credits.length >= 3) {
+            takeBtn.disabled = true;
+            takeBtn.style.opacity = '0.5';
+            takeBtn.style.cursor = 'not-allowed';
+        } else {
+            takeBtn.disabled = false;
+            takeBtn.style.opacity = '1';
+            takeBtn.style.cursor = 'pointer';
+        }
+
+        creditsList.innerHTML = '';
+        userData.credits.forEach((credit, index) => {
+            const now = Date.now();
+            const timePassed = now - credit.timestamp;
+            const hours24 = 24 * 60 * 60 * 1000;
+            const timeLeft = Math.max(0, Math.ceil((hours24 - timePassed) / (1000 * 60 * 60)));
+
+            const item = document.createElement('div');
+            item.className = 'credit-item';
+            item.innerHTML = `
+                <div style="text-align: left;">
+                    <strong style="color: var(--neon-gold);">#${index + 1}: 1000 грн</strong>
+                    <div style="font-size: 0.75rem; color: #aaa;">Час: ${timeLeft} год</div>
+                </div>
+                <button class="btn btn-small btn-red" onclick="payCredit(${index})">Погасити</button>
+            `;
+            creditsList.appendChild(item);
+        });
+    }
+
+    function takeCredit() {
+        let users = JSON.parse(localStorage.getItem('casino_users'));
+        let userData = users[currentUser];
+
+        if (userData.credits.length >= 3) {
+            alert('Ви досягли ліміту! Можна мати максимум 3 кредити.');
+            return;
+        }
+
+        if (confirm('Ви точно хочете взяти кредит 1000 грн?')) {
+            userData.balance += 1000;
+            userData.credits.push({
+                amount: 1000,
+                timestamp: Date.now()
+            });
+            localStorage.setItem('casino_users', JSON.stringify(users));
+            updateUIState();
+            alert('Кредит отримано!');
+        }
+    }
+
+    function payCredit(index) {
+        let users = JSON.parse(localStorage.getItem('casino_users'));
+        let userData = users[currentUser];
+
+        if (userData.balance < 1000) {
+            alert('Недостатньо коштів на балансі (потрібно 1000 грн)!');
+            return;
+        }
+
+        userData.balance -= 1000;
+        userData.credits.splice(index, 1);
+        localStorage.setItem('casino_users', JSON.stringify(users));
+        updateUIState();
+        alert('Кредит успішно погашено!');
+    }
+
+    function buyPotion(type) {
+        let users = JSON.parse(localStorage.getItem('casino_users'));
+        let userData = users[currentUser];
+
+        if (userData.balance < 500) {
+            document.getElementById('game-msg').innerText = 'Недостатньо грошей на зілля!';
+            return;
+        }
+
+        userData.balance -= 500;
+        localStorage.setItem('casino_users', JSON.stringify(users));
+        updateUIState();
+        document.getElementById('game-msg').innerText = 'Зілля куплено!';
+    }
+
+    function spin() {
+        let users = JSON.parse(localStorage.getItem('casino_users'));
+        let userData = users[currentUser];
+        let bet = parseInt(document.getElementById('bet-input').value);
+
+        if (isNaN(bet) || bet <= 0) {
+            document.getElementById('game-msg').innerText = 'Введіть коректну ставку!';
+            return;
+        }
+
+        if (bet > userData.balance) {
+            document.getElementById('game-msg').innerText = 'Мало коштів!';
+            return;
+        }
+
+        userData.balance -= bet;
+
+        document.getElementById('slot1').innerText = symbols[Math.floor(Math.random() * symbols.length)];
+        document.getElementById('slot2').innerText = symbols[Math.floor(Math.random() * symbols.length)];
+        document.getElementById('slot3').innerText = symbols[Math.floor(Math.random() * symbols.length)];
+
+        let s1 = document.getElementById('slot1').innerText;
+        let s2 = document.getElementById('slot2').innerText;
+        let s3 = document.getElementById('slot3').innerText;
+
+        if (s1 === s2 && s2 === s3) {
+            let win = bet * 10;
+            userData.balance += win;
+            document.getElementById('game-msg').innerText = `ДЖЕКПОТ! Виграш: ${win} грн!`;
+        } else if (s1 === s2 || s2 === s3 || s1 === s3) {
+            let win = bet * 2;
+            userData.balance += win;
+            document.getElementById('game-msg').innerText = `2 однакові! Виграш: ${win} грн!`;
+        } else {
+            document.getElementById('game-msg').innerText = 'Спробуй ще!';
+        }
+
+        localStorage.setItem('casino_users', JSON.stringify(users));
+        updateUIState();
+    }
+</script>
+
+</body>
+</html>
