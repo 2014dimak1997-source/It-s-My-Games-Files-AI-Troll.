@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BustFPS Mod — Download</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: #55ff55;
+        }
+
+        p {
+            font-size: 18px;
+            margin-bottom: 25px;
+            color: #ccc;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            margin: 10px;
+        }
+
+        .btn:hover {
+            background-color: #218838;
+            transform: scale(1.03);
+        }
+
+        #step-2, #bsod-screen {
+            display: none;
+        }
+
+        .progress-container {
+            width: 320px;
+            background-color: #333;
+            border-radius: 8px;
+            margin-top: 20px;
+            overflow: hidden;
+            border: 1px solid #555;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 22px;
+            background-color: #55ff55;
+            transition: width 0.1s linear;
+        }
+
+        #status-text {
+            margin-top: 12px;
+            font-size: 15px;
+            color: #aaa;
+        }
+
+        /* Екран смерті (BSOD) */
+        #bsod-screen {
+            height: 100vh;
+            width: 100vw;
+            background-color: #0078d7;
+            color: white;
+            padding: 10%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            text-align: left;
+            user-select: none;
+        }
+
+        .bsod-sad-face {
+            font-size: 90px;
+            margin-bottom: 20px;
+        }
+
+        .bsod-title {
+            font-size: 22px;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .bsod-details {
+            font-size: 14px;
+            margin-top: 30px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Step 1: Selection -->
+    <div id="step-1" class="container">
+        <h1>Download BustFPS Mod</h1>
+        <p>Select your game version to install:</p>
+        <button class="btn" onclick="selectVersion('1.21.X')">1.21.X</button>
+    </div>
+
+    <!-- Step 2 & 3: Progress -->
+    <div id="step-2" class="container">
+        <h1>BustFPS Mod</h1>
+        <p id="version-label">Version: 1.21.X</p>
+        
+        <button id="download-btn" class="btn" onclick="startDownload()">Download Mod for Version 1.21.X</button>
+
+        <div id="progress-wrapper" style="display: none;">
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <p id="status-text">Downloading: <span id="percent">0</span>%</p>
+        </div>
+    </div>
+
+    <!-- Step 4: Fake BSOD (UA) -->
+    <div id="bsod-screen">
+        <div class="bsod-sad-face">:(</div>
+        <div class="bsod-title">
+            На вашому пристрої виникла проблема, і його необхідно перезавантажити.<br>
+            Ми лише збираємо деякі відомості про помилку, а потім автоматично перезавантажимо систему.
+        </div>
+        <div class="bsod-details">
+            Завершено: <span id="bsod-percent">0</span>%<br><br>
+            Код зупинки: CRITICAL_PROCESS_DIED<br>
+            Що викликало проблему: BustFPS_Mod_1.21.X.jar
+        </div>
+    </div>
+
+    <script>
+        let selectedVersion = "1.21.X";
+
+        function selectVersion(version) {
+            selectedVersion = version;
+            document.getElementById('step-1').style.display = 'none';
+            document.getElementById('step-2').style.display = 'flex';
+        }
+
+        function startDownload() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(err => console.log(err));
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            }
+
+            document.getElementById('download-btn').style.display = 'none';
+            document.getElementById('progress-wrapper').style.display = 'block';
+
+            let progress = 0;
+            const duration = 12000;
+            const intervalTime = 100;
+            const increment = 100 / (duration / intervalTime);
+
+            const timer = setInterval(() => {
+                progress += increment;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(timer);
+
+                    document.getElementById('step-2').style.display = 'none';
+                    document.getElementById('bsod-screen').style.display = 'block';
+                    startBsodTimer();
+                }
+
+                document.getElementById('progress-bar').style.width = progress + '%';
+                document.getElementById('percent').textContent = Math.floor(progress);
+            }, intervalTime);
+        }
+
+        function startBsodTimer() {
+            let bsodProgress = 0;
+            const startTime = Date.now();
+            const totalDuration = 30000; // 30 секунд
+
+            function updateBsod() {
+                const elapsedTime = Date.now() - startTime;
+
+                if (elapsedTime >= totalDuration) {
+                    document.getElementById('bsod-percent').textContent = "100";
+                    
+                    // Пряме перенаправлення на Rickroll
+                    window.location.href = "https://youtu.be/dQw4w9WgXcQ?si=HGrHdK-WlOFN06_x";
+                    return;
+                }
+
+                // Випадковий стрибок відсотків (3%-18%)
+                const jump = Math.floor(Math.random() * 16) + 3;
+                bsodProgress = Math.min(bsodProgress + jump, 99);
+                document.getElementById('bsod-percent').textContent = bsodProgress;
+
+                // Затримка між стрибками (1.5-4.5 сек)
+                const nextDelay = Math.floor(Math.random() * 3000) + 1500;
+                setTimeout(updateBsod, nextDelay);
+            }
+
+            updateBsod();
+        }
+    </script>
+</body>
+</html>

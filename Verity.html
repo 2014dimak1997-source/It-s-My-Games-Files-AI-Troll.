@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verity AI</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --sidebar-bg: #111827;
+            --card-bg: #1e293b;
+            --accent-color: #6366f1;
+            --text-color: #f8fafc;
+            --bot-msg-bg: #334155;
+            --user-msg-bg: #4f46e5;
+            --danger-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Екрани модальних вікон */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            width: 340px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .modal-card h3 {
+            margin-bottom: 15px;
+            color: var(--accent-color);
+        }
+
+        .modal-card input, .modal-card textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: #0f172a;
+            color: white;
+            outline: none;
+        }
+
+        .modal-card button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: var(--accent-color);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .auth-toggle {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+
+        /* Бічна панель */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+
+        .new-chat-btn {
+            padding: 12px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .clear-btn {
+            padding: 8px;
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: 0.2s;
+        }
+
+        .clear-btn:hover {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .history-item {
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-item:hover, .history-item.active {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .user-info {
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        /* Чат */
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chat-header {
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+        }
+
+        .dev-btn {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #94a3b8;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* Аватар Verity */
+        .verity-avatar {
+            width: 60px;
+            height: 60px;
+            background: #facc15;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 15px rgba(250, 204, 21, 0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .eyes {
+            position: absolute;
+            width: 8px;
+            height: 12px;
+            background: #000;
+            border-radius: 50%;
+            top: 20px;
+            left: 16px;
+            box-shadow: 20px 0 0 #000;
+            transition: all 0.3s ease;
+        }
+
+        .mouth {
+            position: absolute;
+            width: 26px;
+            height: 12px;
+            background: #000;
+            bottom: 12px;
+            left: 17px;
+            border-radius: 0 0 15px 15px;
+            transition: all 0.1s ease;
+        }
+
+        /* Анімації */
+        .verity-avatar.thinking {
+            animation: thinkFloat 1s infinite alternate ease-in-out;
+        }
+
+        .verity-avatar.thinking .eyes {
+            transform: translateY(-5px);
+        }
+
+        @keyframes thinkFloat {
+            0% { transform: translateY(0) rotate(-3deg); }
+            100% { transform: translateY(-8px) rotate(3deg); }
+        }
+
+        .verity-avatar.talking .mouth {
+            animation: talkMouth 0.2s infinite alternate;
+        }
+
+        @keyframes talkMouth {
+            0% { height: 4px; border-radius: 4px; }
+            100% { height: 14px; border-radius: 0 0 15px 15px; }
+        }
+
+        .chat-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.4;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+        }
+
+        .bot-message {
+            background-color: var(--bot-msg-bg);
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+
+        .user-message {
+            background-color: var(--user-msg-bg);
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: #0f172a;
+            color: white;
+            outline: none;
+        }
+
+        .chat-input-area button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: var(--accent-color);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<!-- АВТОРИЗАЦІЯ -->
+<div class="modal-overlay" id="auth-overlay">
+    <div class="modal-card">
+        <h3 id="auth-title">Вхід у Verity AI</h3>
+        <input type="text" id="auth-username" placeholder="Логін">
+        <input type="password" id="auth-password" placeholder="Пароль">
+        <button onclick="handleAuth()" id="auth-btn">Увійти</button>
+        <div class="auth-toggle" onclick="toggleAuthMode()" id="auth-toggle">Немає акаунту? Зареєструватися</div>
+    </div>
+</div>
+
+<!-- ЗАХИЩЕНИЙ ДОСТУП РОЗРОБНИКА -->
+<div class="modal-overlay" id="dev-overlay" style="display: none;">
+    <div class="modal-card">
+        <h3>🔒 Вхід для розробника</h3>
+        <p style="font-size: 0.8rem; margin-bottom: 15px; color: #94a3b8;">Введіть пароль доступу до коду та промптів</p>
+        
+        <div id="dev-auth-step">
+            <input type="password" id="dev-pass-input" placeholder="Пароль розробника">
+            <button onclick="verifyDevAccess()">Підтвердити</button>
+        </div>
+
+        <div id="dev-panel-step" style="display: none;">
+            <p style="color: #4ade80; font-size: 0.85rem; margin-bottom: 10px;">✅ Доступ надано!</p>
+            <textarea id="dev-system-prompt" rows="4" placeholder="Системний промпт Verity"></textarea>
+            <button onclick="saveDevSettings()" style="background: #22c55e;">Зберегти зміни</button>
+        </div>
+
+        <button onclick="closeDevModal()" style="background: transparent; border: 1px solid #475569; margin-top: 8px;">Закрити</button>
+    </div>
+</div>
+
+<!-- БІЧНА ПАНЕЛЬ -->
+<div class="sidebar">
+    <button class="new-chat-btn" onclick="startNewChat()">+ Новий чат</button>
+    <button class="clear-btn" onclick="clearAllChats()">🗑 Очистити всі чати</button>
+    <div class="history-list" id="history-list"></div>
+    <div class="user-info">
+        <span id="user-display-name">Користувач</span>
+        <button class="logout-btn" onclick="logout()">Вийти</button>
+    </div>
+</div>
+
+<!-- ОСНОВНИЙ ЧАТ -->
+<div class="main-chat">
+    <div class="chat-header">
+        <button class="dev-btn" onclick="openDevModal()">⚙️ Dev</button>
+        <div class="verity-avatar" id="avatar">
+            <div class="eyes"></div>
+            <div class="mouth"></div>
+        </div>
+        <h2>✨ Verity AI</h2>
+    </div>
+    
+    <div class="chat-box" id="chat-box"></div>
+
+    <div class="chat-input-area">
+        <input type="text" id="user-input" placeholder="Запитай щось у Verity..." onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()">Надіслати</button>
+    </div>
+</div>
+
+<script>
+    const API_KEY = "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";
+    const DEV_MASTER_PASS = "Dim@K0te2o14Dim@sK0te";
+    let systemPrompt = "You are Verity, a friendly personal helper friend who knows everything and answers accurately.";
+
+    let currentUser = null;
+    let isRegisterMode = false;
+    let chats = {};
+    let currentChatId = null;
+
+    // --- Авторизація ---
+    function initAuth() {
+        const savedUser = localStorage.getItem('verity_active_user');
+        if (savedUser) {
+            currentUser = savedUser;
+            document.getElementById('auth-overlay').style.display = 'none';
+            document.getElementById('user-display-name').innerText = currentUser;
+            loadUserChats();
+        }
+    }
+
+    function toggleAuthMode() {
+        isRegisterMode = !isRegisterMode;
+        document.getElementById('auth-title').innerText = isRegisterMode ? 'Реєстрація' : 'Вхід у Verity AI';
+        document.getElementById('auth-btn').innerText = isRegisterMode ? 'Зареєструватися' : 'Увійти';
+        document.getElementById('auth-toggle').innerText = isRegisterMode ? 'Вже є акаунт? Увійти' : 'Немає акаунту? Зареєструватися';
+    }
+
+    function handleAuth() {
+        const user = document.getElementById('auth-username').value.trim();
+        const pass = document.getElementById('auth-password').value.trim();
+
+        if (!user || !pass) return alert("Заповніть усі поля!");
+
+        let users = JSON.parse(localStorage.getItem('verity_users') || '{}');
+
+        if (isRegisterMode) {
+            if (users[user]) return alert("Такий користувач вже існує!");
+            users[user] = pass;
+            localStorage.setItem('verity_users', JSON.stringify(users));
+            alert("Реєстрація успішна!");
+            toggleAuthMode();
+        } else {
+            if (!users[user] || users[user] !== pass) return alert("Невірний логін або пароль!");
+            currentUser = user;
+            localStorage.setItem('verity_active_user', currentUser);
+            document.getElementById('auth-overlay').style.display = 'none';
+            document.getElementById('user-display-name').innerText = currentUser;
+            loadUserChats();
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('verity_active_user');
+        location.reload();
+    }
+
+    // --- Доступ Розробника ---
+    function openDevModal() {
+        document.getElementById('dev-overlay').style.display = 'flex';
+        document.getElementById('dev-auth-step').style.display = 'block';
+        document.getElementById('dev-panel-step').style.display = 'none';
+        document.getElementById('dev-pass-input').value = '';
+    }
+
+    function closeDevModal() {
+        document.getElementById('dev-overlay').style.display = 'none';
+    }
+
+    function verifyDevAccess() {
+        const inputPass = document.getElementById('dev-pass-input').value.trim();
+        if (inputPass === DEV_MASTER_PASS) {
+            document.getElementById('dev-auth-step').style.display = 'none';
+            document.getElementById('dev-panel-step').style.display = 'block';
+            document.getElementById('dev-system-prompt').value = systemPrompt;
+        } else {
+            alert("❌ Доступ заборонено! Невірний пароль розробника.");
+        }
+    }
+
+    function saveDevSettings() {
+        systemPrompt = document.getElementById('dev-system-prompt').value;
+        alert("✅ Налаштування розробника оновлено!");
+        closeDevModal();
+    }
+
+    // --- Управління чатами ---
+    function loadUserChats() {
+        chats = JSON.parse(localStorage.getItem(`verity_chats_${currentUser}`) || '{}');
+        const keys = Object.keys(chats);
+        if (keys.length > 0) {
+            loadChat(keys[keys.length - 1]);
+        } else {
+            startNewChat();
+        }
+        renderHistory();
+    }
+
+    function saveUserChats() {
+        localStorage.setItem(`verity_chats_${currentUser}`, JSON.stringify(chats));
+        renderHistory();
+    }
+
+    function startNewChat() {
+        currentChatId = 'chat_' + Date.now();
+        chats[currentChatId] = {
+            title: 'Новий чат',
+            messages: [{ sender: 'bot', text: "Hello! I'm Verity, your personal helper friend. Ask me anything, I know everything." }]
+        };
+        saveUserChats();
+        renderMessages();
+    }
+
+    function clearAllChats() {
+        if (confirm("Ви впевнені, що хочете очистити всі ваші чати?")) {
+            localStorage.removeItem(`verity_chats_${currentUser}`);
+            chats = {};
+            startNewChat();
+        }
+    }
+
+    function loadChat(id) {
+        currentChatId = id;
+        renderMessages();
+        renderHistory();
+    }
+
+    function renderHistory() {
+        const historyList = document.getElementById('history-list');
+        historyList.innerHTML = '';
+        Object.keys(chats).reverse().forEach(id => {
+            const div = document.createElement('div');
+            div.className = `history-item ${id === currentChatId ? 'active' : ''}`;
+            div.innerText = chats[id].title;
+            div.onclick = () => loadChat(id);
+            historyList.appendChild(div);
+        });
+    }
+
+    function renderMessages() {
+        const chatBox = document.getElementById('chat-box');
+        chatBox.innerHTML = '';
+        const currentMessages = chats[currentChatId]?.messages || [];
+        currentMessages.forEach(msg => {
+            appendMessage(msg.text, msg.sender === 'user' ? 'user-message' : 'bot-message');
+        });
+    }
+
+    // --- Повідомлення та AI ---
+    async function sendMessage() {
+        const inputField = document.getElementById('user-input');
+        const avatar = document.getElementById('avatar');
+        const userText = inputField.value.trim();
+
+        if (!userText || !currentChatId) return;
+
+        if (chats[currentChatId].messages.length <= 1) {
+            chats[currentChatId].title = userText.substring(0, 20) + '...';
+        }
+
+        chats[currentChatId].messages.push({ sender: 'user', text: userText });
+        appendMessage(userText, 'user-message');
+        inputField.value = '';
+
+        avatar.classList.add('thinking');
+        const loadingDiv = appendMessage('Verity думає...', 'bot-message');
+
+        try {
+            const recentMessages = chats[currentChatId].messages.slice(-6).map(m => ({
+                role: m.sender === 'user' ? 'user' : 'assistant',
+                content: m.text
+            }));
+
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: "openai/gpt-oss-20b",
+                    messages: [
+                        { role: "system", content: systemPrompt },
+                        ...recentMessages
+                    ]
+                })
+            });
+
+            const data = await response.json();
+            avatar.classList.remove('thinking');
+
+            if (response.ok && data.choices && data.choices[0]) {
+                const botReply = data.choices[0].message.content;
+                loadingDiv.innerText = '';
+                
+                avatar.classList.add('talking');
+                await typeWriter(loadingDiv, botReply);
+                avatar.classList.remove('talking');
+
+                chats[currentChatId].messages.push({ sender: 'bot', text: botReply });
+                saveUserChats();
+            } else {
+                loadingDiv.innerText = "Помилка отримання відповіді.";
+            }
+
+        } catch (error) {
+            avatar.classList.remove('thinking');
+            loadingDiv.innerText = "Помилка мережі.";
+        }
+    }
+
+    function typeWriter(element, text) {
+        return new Promise((resolve) => {
+            let i = 0;
+            const chatBox = document.getElementById('chat-box');
+            function type() {
+                if (i < text.length) {
+                    element.innerText += text.charAt(i);
+                    i++;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    setTimeout(type, 15);
+                } else {
+                    resolve();
+                }
+            }
+            type();
+        });
+    }
+
+    function appendMessage(text, className) {
+        const chatBox = document.getElementById('chat-box');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${className}`;
+        msgDiv.innerText = text;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        return msgDiv;
+    }
+
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') sendMessage();
+    }
+
+    initAuth();
+</script>
+
+</body>
+</html>
